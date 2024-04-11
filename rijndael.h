@@ -1,6 +1,7 @@
 /*
- * TODO: Add your name and student number here, along with
- *       a brief description of this code.
+ * Jara Rodriguez - D22127275
+ * TODO: Add a brief description of this code.
+ *
  */
 
 #ifndef RIJNDAEL_H
