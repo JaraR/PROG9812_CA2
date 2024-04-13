@@ -32,14 +32,49 @@ unsigned char s_box[256] = {
 };
 
 void sub_bytes(unsigned char *block) {
-  // TODO: Implement me!
   for (int i = 0; i < 16; i++) {
     block[i] = s_box[block[i]];
   }
 }
 
+// TODO: Delete once done with main functions. Visualizer for plaintext block and key taken from tests.py
+unsigned char message[] = {
+   0x32, 0x43, 0xF6, 0xA8, 
+   0x88, 0x5A, 0x30, 0x8D, 
+   0x31, 0x31, 0x98, 0xA2, 
+   0xE0, 0x37, 0x07, 0x34
+   };
+unsigned char key[] = {
+   0x2B, 0x7E, 0x15, 0x16, 
+   0x28, 0xAE, 0xD2, 0xA6, 
+   0xAB, 0xF7, 0x15, 0x88, 
+   0x09, 0xCF, 0x4F, 0x3C
+   };
+//  0,  1,  2,  3, 
+//  4,  5,  6,  7,
+//  8,  9, 10, 11,
+// 12, 13, 14, 15
+
 void shift_rows(unsigned char *block) {
   // TODO: Implement me!
+  unsigned char temp = block[4];
+  block[4] = block[5];
+  block[5] = block[6];
+  block[6] = block[7];
+  block[7] = temp;
+
+  temp = block[8];
+  block[8] = block[10];
+  block[10] = temp;
+  temp = block[9];
+  block[9] = block[11];
+  block[11] = temp;
+
+  temp = block[12];
+  block[12] = block[15];
+  block[15] = block[14];
+  block[14] = block[13];
+  block[13] = temp;
 }
 
 void mix_columns(unsigned char *block) {
@@ -69,7 +104,6 @@ unsigned char inv_s_box[256] = {
 };
 
 void invert_sub_bytes(unsigned char *block) {
-  // TODO: Implement me!
   for (int i = 0; i < 16; i++) {
     block[i] = inv_s_box[block[i]];
   }
@@ -77,6 +111,24 @@ void invert_sub_bytes(unsigned char *block) {
 
 void invert_shift_rows(unsigned char *block) {
   // TODO: Implement me!
+  unsigned char temp = block[7];
+  block[7] = block[6];
+  block[6] = block[5];
+  block[5] = block[4];
+  block[4] = temp;
+
+  temp = block[11];
+  block[11] = block[9];
+  block[9] = temp;
+  temp = block[10];
+  block[10] = block[8];
+  block[8] = temp;
+
+  temp = block[13];
+  block[13] = block[14];
+  block[14] = block[15];
+  block[15] = block[12];
+  block[12] = temp;
 }
 
 void invert_mix_columns(unsigned char *block) {
