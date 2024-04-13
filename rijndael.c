@@ -32,6 +32,7 @@ unsigned char s_box[256] = {
 };
 
 void sub_bytes(unsigned char *block) {
+  // TODO: add fxn definitions/info
   for (int i = 0; i < 16; i++) {
     block[i] = s_box[block[i]];
   }
@@ -56,7 +57,7 @@ unsigned char key[] = {
 // 12, 13, 14, 15
 
 void shift_rows(unsigned char *block) {
-  // TODO: Implement me!
+  // TODO: add fxn definitions/info
   unsigned char temp = block[4];
   block[4] = block[5];
   block[5] = block[6];
@@ -77,8 +78,27 @@ void shift_rows(unsigned char *block) {
   block[13] = temp;
 }
 
+// implementation taken and adapted from https://web.archive.org/web/20100626212235/http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
+// also used https://www.angelfire.com/biz7/atleast/mix_columns.pdf to understand the Mix Columns transformation and matrix multiplication
+unsigned char xtime(unsigned char x)
+{
+	return (x & 0x80) ? ((x << 1) ^ 0x1b) : (x<<1);
+}
+
 void mix_columns(unsigned char *block) {
-  // TODO: Implement me!
+  // TODO: add fxn definitions/info
+  unsigned char a, b, c, d, e;
+	
+	/* Process a column at a time */
+	for(int i = 0; i < 4; i++)
+	{
+		a = block[i]; b = block[i+4]; c = block[i+8]; d = block[i+12];
+		e = a ^ b ^ c ^ d;
+		block[i]   ^= e ^ xtime(a^b);
+		block[i+4] ^= e ^ xtime(b^c);
+		block[i+8] ^= e ^ xtime(c^d);
+		block[i+12] ^= e ^ xtime(d^a);
+	}
 }
 
 /*
@@ -104,13 +124,14 @@ unsigned char inv_s_box[256] = {
 };
 
 void invert_sub_bytes(unsigned char *block) {
+  // TODO: add fxn definitions/info
   for (int i = 0; i < 16; i++) {
     block[i] = inv_s_box[block[i]];
   }
 }
 
 void invert_shift_rows(unsigned char *block) {
-  // TODO: Implement me!
+  // TODO: add fxn definitions/info
   unsigned char temp = block[7];
   block[7] = block[6];
   block[6] = block[5];
@@ -132,7 +153,21 @@ void invert_shift_rows(unsigned char *block) {
 }
 
 void invert_mix_columns(unsigned char *block) {
-  // TODO: Implement me!
+  // TODO: add fxn definitions/info
+  unsigned char a, b, c, d, e, x, y, z;
+	
+	for(int i = 0; i < 4; i++)
+	{
+		a = block[i]; b = block[i+4]; c = block[i+8]; d = block[i+12];
+		e = a ^ b ^ c ^ d;
+		z = xtime(e);
+		x = e ^ xtime(xtime(z^a^c) );
+		y = e ^ xtime(xtime(z^b^d) );
+		block[i]   ^= x ^ xtime(a^b);
+		block[i+4] ^= y ^ xtime(b^c);
+		block[i+8] ^= x ^ xtime(c^d);
+		block[i+12] ^= y ^ xtime(d^a);
+	}
 }
 
 /*
