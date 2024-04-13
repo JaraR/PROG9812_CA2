@@ -192,14 +192,38 @@ void add_round_key(unsigned char *block, unsigned char *round_key) {
   }
 }
 
+unsigned char r_con[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
 /*
  * This function should expand the round key. Given an input,
  * which is a single 128-bit key, it should return a 176-byte
  * vector, containing the 11 round keys one after the other
  */
-unsigned char *expand_key(unsigned char *cipher_key) {
-  // TODO: Implement me!
-  return 0;
+unsigned char (*expand_key(unsigned char *cipher_key))[16] {
+  // TODO: add fxn definitions/info
+  unsigned char (*round_keys)[16] = malloc(sizeof(unsigned char) * 11 * 16);
+
+  for(int i = 0; i < 16; i++) {
+   round_keys[0][i] = cipher_key[i];
+  }
+  
+  for(int j = 1; j < 11; j++) {
+   for(int k = 0; k < 4; k++) {
+      if (k == 0) {
+         round_keys[j][k] = s_box[round_keys[j-1][7]] ^ round_keys[j-1][k] ^ r_con[j-1];
+         round_keys[j][k+4] = s_box[round_keys[j-1][11]] ^ round_keys[j-1][k+4] ^ 0x00;
+         round_keys[j][k+8] = s_box[round_keys[j-1][15]] ^ round_keys[j-1][k+8] ^ 0x00;
+         round_keys[j][k+12] = s_box[round_keys[j-1][3]] ^ round_keys[j-1][k+12] ^ 0x00;
+      }
+      else {
+         round_keys[j][k] = round_keys[j][k-1] ^ round_keys[j-1][k];
+         round_keys[j][k+4] = round_keys[j][k+3] ^ round_keys[j-1][k+4];
+         round_keys[j][k+8] = round_keys[j][k+7] ^ round_keys[j-1][k+8];
+         round_keys[j][k+12] = round_keys[j][k+11] ^ round_keys[j-1][k+12];
+      }
+   }
+  }
+
+  return round_keys;
 }
 
 /*
