@@ -231,9 +231,24 @@ unsigned char (*expand_key(unsigned char *cipher_key))[16] {
  * header file should go here
  */
 unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
-  // TODO: Implement me!
+  // TODO: add fxn definitions/info
   unsigned char *output =
       (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
+  unsigned char (*all_round_keys)[16] = expand_key(key);
+
+  add_round_key(plaintext, all_round_keys[0]);
+
+  for(int i = 1; i < 10; i++) {
+    sub_bytes(plaintext);
+    shift_rows(plaintext);
+    mix_columns(plaintext);
+    add_round_key(plaintext, all_round_keys[i]);
+  }
+
+  sub_bytes(plaintext);
+  shift_rows(plaintext);
+  add_round_key(plaintext, all_round_keys[10]);
+
   return output;
 }
 
