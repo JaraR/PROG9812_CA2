@@ -102,7 +102,7 @@ void mix_columns(unsigned char *block) {
   unsigned char a, b, c, d, e;
 	
 	/* Process a column at a time */
-	for(int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		a = block[i]; b = block[i+4]; c = block[i+8]; d = block[i+12];
 		e = a ^ b ^ c ^ d;
@@ -168,7 +168,7 @@ void invert_mix_columns(unsigned char *block) {
   // TODO: add fxn definitions/info
   unsigned char a, b, c, d, e, x, y, z;
 	
-	for(int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		a = block[i]; b = block[i+4]; c = block[i+8]; d = block[i+12];
 		e = a ^ b ^ c ^ d;
@@ -187,7 +187,7 @@ void invert_mix_columns(unsigned char *block) {
  */
 void add_round_key(unsigned char *block, unsigned char *round_key) {
   // TODO: add fxn definitions/info
-  for(int i = 0; i < 16; i++) {
+  for (int i = 0; i < 16; i++) {
    block[i] ^= round_key[i];
   }
 }
@@ -202,12 +202,12 @@ unsigned char (*expand_key(unsigned char *cipher_key))[16] {
   // TODO: add fxn definitions/info
   unsigned char (*round_keys)[16] = malloc(sizeof(unsigned char) * 11 * 16);
 
-  for(int i = 0; i < 16; i++) {
+  for (int i = 0; i < 16; i++) {
    round_keys[0][i] = cipher_key[i];
   }
   
-  for(int j = 1; j < 11; j++) {
-   for(int k = 0; k < 4; k++) {
+  for (int j = 1; j < 11; j++) {
+   for (int k = 0; k < 4; k++) {
       if (k == 0) {
          round_keys[j][k] = s_box[round_keys[j-1][7]] ^ round_keys[j-1][k] ^ r_con[j-1];
          round_keys[j][k+4] = s_box[round_keys[j-1][11]] ^ round_keys[j-1][k+4] ^ 0x00;
@@ -234,20 +234,23 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
   // TODO: add fxn definitions/info
   unsigned char *output =
       (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
+  output = plaintext;
   unsigned char (*all_round_keys)[16] = expand_key(key);
 
-  add_round_key(plaintext, all_round_keys[0]);
+  add_round_key(output, all_round_keys[0]);
 
-  for(int i = 1; i < 10; i++) {
-    sub_bytes(plaintext);
-    shift_rows(plaintext);
-    mix_columns(plaintext);
-    add_round_key(plaintext, all_round_keys[i]);
+  for (int i = 1; i < 10; i++) {
+    sub_bytes(output);
+    shift_rows(output);
+    mix_columns(output);
+    add_round_key(output, all_round_keys[i]);
   }
 
-  sub_bytes(plaintext);
-  shift_rows(plaintext);
-  add_round_key(plaintext, all_round_keys[10]);
+  sub_bytes(output);
+  shift_rows(output);
+  add_round_key(output, all_round_keys[10]);
+
+  free(all_round_keys);
 
   return output;
 }
@@ -257,5 +260,23 @@ unsigned char *aes_decrypt_block(unsigned char *ciphertext,
   // TODO: Implement me!
   unsigned char *output =
       (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
+  output = ciphertext;
+  unsigned char (*all_round_keys)[16] = expand_key(key);
+  
+  add_round_key(output, all_round_keys[10]);
+  invert_shift_rows(output);
+  invert_sub_bytes(output);
+
+  for (int i = 9; i > 0; i--) {
+    add_round_key(output, all_round_keys[i]);
+    invert_mix_columns(output);
+    invert_shift_rows(output);
+    invert_sub_bytes(output);
+  }
+
+  add_round_key(output, all_round_keys[0]);
+  
+  free(all_round_keys);
+  
   return output;
 }
