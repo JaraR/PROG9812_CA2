@@ -232,10 +232,12 @@ unsigned char (*expand_key(unsigned char *cipher_key))[16] {
  */
 unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
   // TODO: add fxn definitions/info
-  unsigned char *output =
-      (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
-  output = plaintext;
+  unsigned char *output = (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
   unsigned char (*all_round_keys)[16] = expand_key(key);
+
+  for(int i = 0; i < 16; i++) {
+   output[i] = plaintext[i];
+  }
 
   add_round_key(output, all_round_keys[0]);
 
@@ -257,12 +259,14 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
 
 unsigned char *aes_decrypt_block(unsigned char *ciphertext,
                                  unsigned char *key) {
-  // TODO: Implement me!
-  unsigned char *output =
-      (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
-  output = ciphertext;
+  // TODO: add fxn definitions/info
+  unsigned char *output = (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
   unsigned char (*all_round_keys)[16] = expand_key(key);
-  
+
+  for(int i = 0; i < 16; i++) {
+   output[i] = ciphertext[i];
+  }
+
   add_round_key(output, all_round_keys[10]);
   invert_shift_rows(output);
   invert_sub_bytes(output);
