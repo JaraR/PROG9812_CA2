@@ -210,7 +210,7 @@ unsigned char (*expand_key(unsigned char *cipher_key))[16] {
          round_keys[j][k+8] = s_box[round_keys[j-1][15]] ^ round_keys[j-1][k+8] ^ 0x00;
          round_keys[j][k+12] = s_box[round_keys[j-1][3]] ^ round_keys[j-1][k+12] ^ 0x00;
       }
-      /*Every other byte is calculated by adding (XOR) the previous column's coressponding bytes with the corresponding 
+      /*Every other byte is calculated by adding (XOR) the previous column's corresponding bytes with the corresponding 
       bytes of the previous round key.*/
       else {
          round_keys[j][k] = round_keys[j][k-1] ^ round_keys[j-1][k];
@@ -269,12 +269,12 @@ unsigned char *aes_decrypt_block(unsigned char *ciphertext, unsigned char *key) 
    output[i] = ciphertext[i];
   }
 
-  // Applies the SubBytes, ShiftRows, and AddRoundKey steps for the initial round.
+  // Applies the AddRoundKey, inverse ShiftRows, and inverse SubBytes steps for the initial round.
   add_round_key(output, all_round_keys[10]);
   invert_shift_rows(output);
   invert_sub_bytes(output);
 
-  // Applies the AddRoundKey, MixColumns, ShiftRows, and SubBytes steps for the 9 main rounds.
+  // Applies the AddRoundKey, inverse MixColumns, inverse ShiftRows, and inverse SubBytes steps for the 9 main rounds.
   for (int i = 9; i > 0; i--) {
     add_round_key(output, all_round_keys[i]);
     invert_mix_columns(output);
