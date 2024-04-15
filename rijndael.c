@@ -1,18 +1,14 @@
 /*
  * Jara Rodriguez - D22127275
- * TODO: Add a brief description of this code.
+ * Main Rijndael algorithms and functions that encrypt and decrypt blocks of text.
  *
  */
 
 #include <stdlib.h>
-// TODO: Any other files you need to include should go here
-
 #include "rijndael.h"
 
-/*
- * Operations used when encrypting a block
- */
-unsigned char s_box[256] = {
+// Byte substitution table
+const unsigned char s_box[256] = {
   0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
   0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
   0xB7, 0xFD, 0x93, 0x26, 0x36, 0x3F, 0xF7, 0xCC, 0x34, 0xA5, 0xE5, 0xF1, 0x71, 0xD8, 0x31, 0x15,
@@ -31,92 +27,8 @@ unsigned char s_box[256] = {
   0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 };
 
-void sub_bytes(unsigned char *block) {
-  // TODO: add fxn definitions/info
-  for (int i = 0; i < 16; i++) {
-    block[i] = s_box[block[i]];
-  }
-}
-
-// TODO: Delete once done with main functions. Visualizer and debugger for plaintext block and key taken from tests.py and in class animation/demo
-// unsigned char message[] = {
-//    0x32, 0x43, 0xF6, 0xA8, 
-//    0x88, 0x5A, 0x30, 0x8D, 
-//    0x31, 0x31, 0x98, 0xA2, 
-//    0xE0, 0x37, 0x07, 0x34
-//    };
-// unsigned char key[] = {
-//    0x2B, 0x7E, 0x15, 0x16, 
-//    0x28, 0xAE, 0xD2, 0xA6, 
-//    0xAB, 0xF7, 0x15, 0x88, 
-//    0x09, 0xCF, 0x4F, 0x3C
-//    };
-unsigned char animationBlock[] = {
-   0x32, 0x88, 0x31, 0xe0,
-   0x43, 0x5a, 0x31, 0x37,
-   0xf6, 0x30, 0x98, 0x07,
-   0xa8, 0x8d, 0xa2, 0x34
-};
-unsigned char animationKey[] = {
-   0x2b, 0x28, 0xab, 0x09,
-   0x7e, 0xae, 0xf7, 0xcf,
-   0x15, 0xd2, 0x15, 0x4f,
-   0x16, 0xa6, 0x88, 0x3c
-};
-//  0,  1,  2,  3, 
-//  4,  5,  6,  7,
-//  8,  9, 10, 11,
-// 12, 13, 14, 15
-
-void shift_rows(unsigned char *block) {
-  // TODO: add fxn definitions/info
-  unsigned char temp = block[4];
-  block[4] = block[5];
-  block[5] = block[6];
-  block[6] = block[7];
-  block[7] = temp;
-
-  temp = block[8];
-  block[8] = block[10];
-  block[10] = temp;
-  temp = block[9];
-  block[9] = block[11];
-  block[11] = temp;
-
-  temp = block[12];
-  block[12] = block[15];
-  block[15] = block[14];
-  block[14] = block[13];
-  block[13] = temp;
-}
-
-// implementation taken and adapted from https://web.archive.org/web/20100626212235/http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
-// also used https://www.angelfire.com/biz7/atleast/mix_columns.pdf to understand the Mix Columns transformation and matrix multiplication
-unsigned char xtime(unsigned char x)
-{
-	return (x & 0x80) ? ((x << 1) ^ 0x1b) : (x<<1);
-}
-
-void mix_columns(unsigned char *block) {
-  // TODO: add fxn definitions/info
-  unsigned char a, b, c, d, e;
-	
-	/* Process a column at a time */
-	for (int i = 0; i < 4; i++)
-	{
-		a = block[i]; b = block[i+4]; c = block[i+8]; d = block[i+12];
-		e = a ^ b ^ c ^ d;
-		block[i]   ^= e ^ xtime(a^b);
-		block[i+4] ^= e ^ xtime(b^c);
-		block[i+8] ^= e ^ xtime(c^d);
-		block[i+12] ^= e ^ xtime(d^a);
-	}
-}
-
-/*
- * Operations used when decrypting a block
- */
-unsigned char inv_s_box[256] = {
+// Inverse byte substitution table
+const unsigned char inv_s_box[256] = {
   0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
   0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB,
   0x54, 0x7B, 0x94, 0x32, 0xA6, 0xC2, 0x23, 0x3D, 0xEE, 0x4C, 0x95, 0x0B, 0x42, 0xFA, 0xC3, 0x4E,
@@ -135,21 +47,90 @@ unsigned char inv_s_box[256] = {
   0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
 };
 
+// Round constant
+const unsigned char r_con[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
+
+/*
+ * Operations used when encrypting a block
+ */
+
+// Replaces all bytes in the block with its sub byte after an s-box lookup.
+void sub_bytes(unsigned char *block) {
+  for (int i = 0; i < 16; i++) {
+    block[i] = s_box[block[i]];
+  }
+}
+
+// Rotates the 2nd row of the block by one to the left, the 3rd row by two to the left, and the 4th row by three to the left.
+void shift_rows(unsigned char *block) {
+  // Row 2
+  unsigned char temp = block[4];
+  block[4] = block[5];
+  block[5] = block[6];
+  block[6] = block[7];
+  block[7] = temp;
+
+  // Row 3
+  temp = block[8];
+  block[8] = block[10];
+  block[10] = temp;
+  temp = block[9];
+  block[9] = block[11];
+  block[11] = temp;
+
+  // Row 4
+  temp = block[12];
+  block[12] = block[15];
+  block[15] = block[14];
+  block[14] = block[13];
+  block[13] = temp;
+}
+
+// implementation taken and adapted from https://web.archive.org/web/20100626212235/http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
+// also used https://www.angelfire.com/biz7/atleast/mix_columns.pdf to understand the Mix Columns transformation and matrix multiplication
+unsigned char xtime(unsigned char x)
+{
+	return (x & 0x80) ? ((x << 1) ^ 0x1b) : (x<<1);
+}
+
+// Modulo multiplies each column in Rijndael's Galois Field by a given matrix.
+void mix_columns(unsigned char *block) {
+  unsigned char a, b, c, d, e;
+	
+	// Processes one column of the block at a time
+	for (int i = 0; i < 4; i++)
+	{
+		a = block[i]; b = block[i+4]; c = block[i+8]; d = block[i+12];
+		e = a ^ b ^ c ^ d;
+		block[i]   ^= e ^ xtime(a^b);
+		block[i+4] ^= e ^ xtime(b^c);
+		block[i+8] ^= e ^ xtime(c^d);
+		block[i+12] ^= e ^ xtime(d^a);
+	}
+}
+
+/*
+ * Operations used when decrypting a block
+ */
+
+// Reverses the sub bytes step using an inverse s-box lookup and substitution.
 void invert_sub_bytes(unsigned char *block) {
-  // TODO: add fxn definitions/info
   for (int i = 0; i < 16; i++) {
     block[i] = inv_s_box[block[i]];
   }
 }
 
+/* Reverses the shift rows step by rotating the 2nd row of the block by one to the right, 
+the 3rd row by two to the right, and the 4th row by three to the right.*/
 void invert_shift_rows(unsigned char *block) {
-  // TODO: add fxn definitions/info
+  // Row 2
   unsigned char temp = block[7];
   block[7] = block[6];
   block[6] = block[5];
   block[5] = block[4];
   block[4] = temp;
 
+  // Row 3
   temp = block[11];
   block[11] = block[9];
   block[9] = temp;
@@ -157,6 +138,7 @@ void invert_shift_rows(unsigned char *block) {
   block[10] = block[8];
   block[8] = temp;
 
+  // Row 4
   temp = block[13];
   block[13] = block[14];
   block[14] = block[15];
@@ -164,11 +146,12 @@ void invert_shift_rows(unsigned char *block) {
   block[12] = temp;
 }
 
+// Reverses mix columns steps.
 void invert_mix_columns(unsigned char *block) {
-  // TODO: add fxn definitions/info
   unsigned char a, b, c, d, e, x, y, z;
 	
-	for (int i = 0; i < 4; i++)
+	// Processes one column of the block at a time
+  for (int i = 0; i < 4; i++)
 	{
 		a = block[i]; b = block[i+4]; c = block[i+8]; d = block[i+12];
 		e = a ^ b ^ c ^ d;
@@ -185,35 +168,50 @@ void invert_mix_columns(unsigned char *block) {
 /*
  * This operation is shared between encryption and decryption
  */
+// Adds each byte of the block to the corresponding byte of the round key using bitwise XOR.
 void add_round_key(unsigned char *block, unsigned char *round_key) {
-  // TODO: add fxn definitions/info
   for (int i = 0; i < 16; i++) {
    block[i] ^= round_key[i];
   }
 }
 
-unsigned char r_con[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
 /*
- * This function should expand the round key. Given an input,
- * which is a single 128-bit key, it should return a 176-byte
+ * This function expands the round key. Given an input,
+ * which is a single 128-bit key, it returns a 176-byte
  * vector, containing the 11 round keys one after the other
  */
+// Expands a given cipher key into 11 round keys, used in the initial round, 9 main rounds, and final round.
 unsigned char (*expand_key(unsigned char *cipher_key))[16] {
-  // TODO: add fxn definitions/info
   unsigned char (*round_keys)[16] = malloc(sizeof(unsigned char) * 11 * 16);
+  /*
+   * The imaginary shape of each round key. Each round key is contained in the 2D round_keys array.
+   * The round_keys array has 11 rows and 16 columns.
+   *  0,  1,  2,  3, 
+   *  4,  5,  6,  7,
+   *  8,  9, 10, 11,
+   * 12, 13, 14, 15
+   */
 
+  // Sets the first row (round key) of the 2D round_keys array equal to the bytes in the given cipher key.
   for (int i = 0; i < 16; i++) {
    round_keys[0][i] = cipher_key[i];
   }
   
+  // In each subsequent 2D row, calculates each round key.
   for (int j = 1; j < 11; j++) {
+   // Each round key (2D row of round_keys) is calculated based on the first 4 bytes in the row.
    for (int k = 0; k < 4; k++) {
+      /* Every byte that is in a position of a multiple of 4 (first imaginary column) is calculated by taking the 
+      corresponding bytes in the last (imaginary) column of the previous round key rotated up by one, doing an s-box 
+      lookup, and added (XOR) to the corresponding bytes of the previous round key's first column and a round constant.*/
       if (k == 0) {
          round_keys[j][k] = s_box[round_keys[j-1][7]] ^ round_keys[j-1][k] ^ r_con[j-1];
          round_keys[j][k+4] = s_box[round_keys[j-1][11]] ^ round_keys[j-1][k+4] ^ 0x00;
          round_keys[j][k+8] = s_box[round_keys[j-1][15]] ^ round_keys[j-1][k+8] ^ 0x00;
          round_keys[j][k+12] = s_box[round_keys[j-1][3]] ^ round_keys[j-1][k+12] ^ 0x00;
       }
+      /*Every other byte is calculated by adding (XOR) the previous column's coressponding bytes with the corresponding 
+      bytes of the previous round key.*/
       else {
          round_keys[j][k] = round_keys[j][k-1] ^ round_keys[j-1][k];
          round_keys[j][k+4] = round_keys[j][k+3] ^ round_keys[j-1][k+4];
@@ -226,21 +224,22 @@ unsigned char (*expand_key(unsigned char *cipher_key))[16] {
   return round_keys;
 }
 
-/*
- * The implementations of the functions declared in the
- * header file should go here
- */
+/* Main encrypt function that takes a 128-bit plaintext block and a 128-bit key, applies the Rijndael algorithm, and 
+returns an encrypted ciphertext.*/
 unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
-  // TODO: add fxn definitions/info
   unsigned char *output = (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
+  // Sends the given key to the key expansion algorithm.
   unsigned char (*all_round_keys)[16] = expand_key(key);
 
+  // Sets the output variable equal to the given plaintext.
   for(int i = 0; i < 16; i++) {
    output[i] = plaintext[i];
   }
 
+  // Applies AddRoundKey step for the initial round.
   add_round_key(output, all_round_keys[0]);
 
+  // Applies the SubBytes, ShiftRows, MixColumns, and AddRoundKey steps for the 9 main rounds.
   for (int i = 1; i < 10; i++) {
     sub_bytes(output);
     shift_rows(output);
@@ -248,6 +247,7 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
     add_round_key(output, all_round_keys[i]);
   }
 
+  // Applies the SubBytes, ShiftRows, and AddRoundKey steps for the final round.
   sub_bytes(output);
   shift_rows(output);
   add_round_key(output, all_round_keys[10]);
@@ -257,20 +257,24 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
   return output;
 }
 
-unsigned char *aes_decrypt_block(unsigned char *ciphertext,
-                                 unsigned char *key) {
-  // TODO: add fxn definitions/info
+/* Main decrypt function that takes a 128-bit ciphertext block and a 128-bit key, applies the Rijndael algorithm, and 
+returns an unencrypted plaintext.*/
+unsigned char *aes_decrypt_block(unsigned char *ciphertext, unsigned char *key) {
   unsigned char *output = (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
+  // Sends the given key to the key expansion algorithm.
   unsigned char (*all_round_keys)[16] = expand_key(key);
 
+  // Sets the output variable equal to the given ciphertext.
   for(int i = 0; i < 16; i++) {
    output[i] = ciphertext[i];
   }
 
+  // Applies the SubBytes, ShiftRows, and AddRoundKey steps for the initial round.
   add_round_key(output, all_round_keys[10]);
   invert_shift_rows(output);
   invert_sub_bytes(output);
 
+  // Applies the AddRoundKey, MixColumns, ShiftRows, and SubBytes steps for the 9 main rounds.
   for (int i = 9; i > 0; i--) {
     add_round_key(output, all_round_keys[i]);
     invert_mix_columns(output);
@@ -278,6 +282,7 @@ unsigned char *aes_decrypt_block(unsigned char *ciphertext,
     invert_sub_bytes(output);
   }
 
+  // Applies AddRoundKey step for the final round.
   add_round_key(output, all_round_keys[0]);
   
   free(all_round_keys);

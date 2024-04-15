@@ -1,7 +1,7 @@
 /*
  * Jara Rodriguez - D22127275
- * TODO: Add a brief description of this code.
- *
+ * Header file that contains the main encrypt and decrypt function prototypes.
+ * 
  */
 
 #ifndef RIJNDAEL_H
